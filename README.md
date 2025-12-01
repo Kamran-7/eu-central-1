@@ -1,9 +1,9 @@
-# Capapay (bstable) Infrastructure 
+#  Infrastructure 
 
-Reusable Terraform for Capapay’s backend infrastructure across **dev** and **prod**. Environments are **fully isolated** (separate VPCs and separate Terraform state). Terraform provisions infrastructure; **your CI/CD pipeline deploys the applications to ECS**.
+Reusable Terraform for ABC backend infrastructure across **dev** and **prod**. Environments are **fully isolated** (separate VPCs and separate Terraform state). Terraform provisions infrastructure; **your CI/CD pipeline deploys the applications to ECS**.
 
-**Client:** Capapay  
-**Resource Naming:** `bstable`  
+**Client:** XXX  
+**Resource Naming:** `abc`  
 **Region:** `us-east-1`
 
 ---
@@ -83,10 +83,10 @@ Reusable Terraform for Capapay’s backend infrastructure across **dev** and **p
 
    #### Logging Infrastructure
      **CloudWatch Log Groups** - Per-service log streams
-  - `/ecs/bstable-{env}-backend`
-  - `/ecs/bstable-{env}-worker`
-  - `/ecs/bstable-{env}-beat`
-  - `/ecs/bstable-{env}-rabbitmq` (if enabled)
+  - `/ecs/xxx-{env}-backend`
+  - `/ecs/xxx-{env}-worker`
+  - `/ecs/xxx-{env}-beat`
+  - `/ecs/xxx-{env}-rabbitmq` (if enabled)
 
    -  **RDS Enhanced Monitoring** - Dedicated log group
    -  **RDS Engine Logs** - PostgreSQL logs exported to CloudWatch
@@ -113,7 +113,7 @@ Reusable Terraform for Capapay’s backend infrastructure across **dev** and **p
 ## Repository Layout
 
 ```
-bstable-infra/
+xxx-infra/
 ├── envs/
 │   ├── dev/
 │   │   ├── backend-dev.hcl            # remote state backend (S3 + DynamoDB)
@@ -186,7 +186,7 @@ Creates:
 ### `envs/dev/dev.tfvars` (non-secret)
 ```hcl
 # Core
-project     = "bstable"
+project     = "xxx"
 environment = "dev"
 aws_region  = "us-east-1"
 
@@ -214,7 +214,7 @@ image_tag = "0.0.100"
 
 ### `envs/dev/dev.secrets.tfvars` (secret, **gitignored**)
 ```hcl
-db_password = "dev_Str0ng_Pass!"
+db_password = "xxx"
 ```
 
 ### Production Example
@@ -222,7 +222,7 @@ db_password = "dev_Str0ng_Pass!"
 `envs/prod/prod.tfvars`
 ```hcl
 # Core
-project     = "bstable"
+project     = "xxx"
 environment = "prod"
 aws_region  = "us-east-1"
 
@@ -236,7 +236,7 @@ db_engine         = "postgres"
 db_engine_version = "16.6"
 db_subnet_cidrs   = ["192.168.5.0/24", "192.168.6.0/24"]
 POSTGRES_DB       = "appdb"
-POSTGRES_USER     = "prod_user"
+POSTGRES_USER     = "xxx"
 
 
 # RDS → CloudWatch (engine logs) + Enhanced Monitoring + PI
@@ -262,7 +262,7 @@ log_retention_days    = 14
 # RabbitMQ service (public image in public subnets)
 create_rabbitmq    = true
 rabbitmq_image     = "public.ecr.aws/docker/library/rabbitmq:4.0-management"
-rabbitmq_user      = "bstable-queue"
+rabbitmq_user      = "xxx-queue"
 rabbitmq_mgmt_cidr = [] # keep UI closed by default; set ["X.X.X.X/32"] temporarily if needed
 
 enable_alarms           = true
@@ -327,7 +327,7 @@ After the infrastructure is created, **ECS deployments are fully handled by your
 **Pipeline responsibilities (each release):**
 1. **Build** Docker images for `backend`, `beat`, `worker`, rabbitmq.
 2. **Tag** images (e.g., `0.0.101`).
-3. **Push** to the correct ECR repos (e.g., `dev-bstable-backend:0.0.101`).
+3. **Push** to the correct ECR repos (e.g., `dev-xxx-backend:0.0.101`).
 4. **Register** a new ECS task definition revision using that tag.
 5. **Update** the ECS service (or force a new deployment).
 6. **Wait** for healthy state (ALB checks).
@@ -385,10 +385,10 @@ All resources follow:
 {project}-{environment}-{resource}
 ```
 Examples:
-- `bstable-dev-vpc`, `bstable-dev-alb`
-- `dev-bstable-backend` (ECR repo)
-- `bstable-dev-backend` (ECS service / TaskDef family)
-- `bstable-dev-rds-sg` (Security Group)
+- `xxx-dev-vpc`, `xxx-dev-alb`
+- `dev-xxx-backend` (ECR repo)
+- `xxx-dev-backend` (ECS service / TaskDef family)
+- `xxx-dev-rds-sg` (Security Group)
 
 This keeps ownership clear and avoids collisions.
 
@@ -396,7 +396,7 @@ This keeps ownership clear and avoids collisions.
 
 ## Best Practices Followed
 
-- **Environment isolation:** separate VPCs and **separate remote state** (S3 + DynamoDB locking).
+- **Environment isolation:** separate VPCs and **separate remote state** (S3 ).
 - **Least privilege IAM:** distinct **task role** and **execution role**.
 - **Security Groups:** **SG→SG** rules for ECS→RDS; no broad internal CIDRs.
 - **CloudWatch Logs:** per-service log groups with retention.
